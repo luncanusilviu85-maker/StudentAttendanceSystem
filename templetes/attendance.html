@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mark Attendance – Student Attendance System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Sidebar (same as dashboard) -->
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon"></span><span class="brand-text">AttendanceMS</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('attendance.dashboard') }}" class="nav-item"> Dashboard</a>
+      <a href="{{ url_for('students.list_students') }}" class="nav-item">Students</a>
+      <a href="{{ url_for('attendance.mark_attendance') }}" class="nav-item active"> Mark Attendance</a>
+      <a href="{{ url_for('attendance.report') }}" class="nav-item"> Reports</a>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="user-badge">{{ session.get('role','user') | upper }}</span>
+      {{ session.get('username','') }}
+      <a href="{{ url_for('auth.logout') }}" class="logout-link">Logout</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h2>Mark Attendance</h2>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message | safe }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" class="attendance-form">
+      <!-- Session details -->
+      <div class="card form-card session-header">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module / Session</label>
+            <input type="text" name="module" required placeholder="e.g. Cloud Technologies">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" name="date" value="{{ today }}" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student list -->
+      <div class="card">
+        <table class="data-table attendance-table">
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Name</th>
+              <th>Course</th>
+              <th>Status</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for student in students %}
+            <tr>
+              <td>{{ student.student_id }}</td>
+              <td>{{ student.name }}</td>
+              <td>{{ student.course }}</td>
+              <td>
+                <div class="status-radios">
+                  <label class="radio-present">
+                    <input type="radio" name="status_{{ student.student_id }}" value="present" checked>
+                    Present
+                  </label>
+                  <label class="radio-absent">
+                    <input type="radio" name="status_{{ student.student_id }}" value="absent">
+                    Absent
+                  </label>
+                  <label class="radio-late">
+                    <input type="radio" name="status_{{ student.student_id }}" value="late">
+                    Late
+                  </label>
+                </div>
+              </td>
+              <td>
+                <input type="text" name="notes_{{ student.student_id }}"
+                       placeholder="Optional note" class="notes-input">
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="empty">No students registered yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg">Save Attendance</button>
+        <a href="{{ url_for('attendance.dashboard') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </main>
+  <script src="attendance.js"></script>
+</body>
+</html>
